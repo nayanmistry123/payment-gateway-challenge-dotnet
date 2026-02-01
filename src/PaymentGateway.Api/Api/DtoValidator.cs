@@ -30,6 +30,6 @@ public static class DtoValidator
 
     private static void ConstructInvalidPaymentException(string errorDetail)
     {
-        throw new ApiException(ErrorSummary.InvalidPaymentRequest, errorDetail);
+        throw new ApiException(ErrorSummary.InvalidPaymentRequest, errorDetail, 400);
     }
 }

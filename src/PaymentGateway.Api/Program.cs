@@ -10,9 +10,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<PaymentsRepository>();
-
-builder.Services.AddTransient<IPaymentsApi>();
+builder.Services.AddSingleton<IPaymentsRepository, PaymentsRepository>();
+builder.Services.AddTransient<IPaymentsApi, PaymentsApi>();
 
 var app = builder.Build();
 
