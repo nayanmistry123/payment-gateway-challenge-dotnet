@@ -27,7 +27,7 @@ public class ControllerTests
 
         var controller = new PaymentsController(mockApi.Object);
 
-        var response = await controller.ProcessPayment(GetExampleRequest());
+        var response = await controller.ProcessPayment(TestHelpers.GetPostPaymentRequest());
 
         Assert.That(response.Result, Is.Not.Null);
         Assert.That(response.Result is ObjectResult);
@@ -84,7 +84,7 @@ public class ControllerTests
         
         var controller = new PaymentsController(mockApi.Object);
         
-        var response = await controller.ProcessPayment(GetExampleRequest());
+        var response = await controller.ProcessPayment(TestHelpers.GetPostPaymentRequest());
 
         Assert.That(response.Result, Is.Not.Null);
         Assert.That(response.Result is OkObjectResult);
@@ -176,19 +176,6 @@ public class ControllerTests
             futureTime.Year,
             "GBP",
             200
-        );
-    }
-    
-    private PostPaymentRequest GetExampleRequest()
-    {
-        var futureTime = DateTimeOffset.Now.AddYears(1);
-        return new PostPaymentRequest(
-            "123456789012345",
-            futureTime.Month,
-            futureTime.Year,
-            "GBP",
-            1200,
-            "1234"
         );
     }
 }

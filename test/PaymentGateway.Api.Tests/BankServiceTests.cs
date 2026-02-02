@@ -9,6 +9,8 @@ using NUnit.Framework;
 using PaymentGateway.Api.Models.Bank;
 using PaymentGateway.Api.Services;
 
+using static PaymentGateway.Api.Tests.TestHelpers;
+
 namespace PaymentGateway.Api.Tests;
 
 public class BankServiceTests
@@ -43,7 +45,7 @@ public class BankServiceTests
         //Exception is caught at controller level 
         Assert.ThrowsAsync<HttpRequestException>(async () =>
         {
-            await bankService.MakePayment(GetExampleRequest());
+            await bankService.MakePayment(GetExampleBankPaymentRequest());
         });        
         
         //Mock called 4 times - initial + 3 retries
@@ -77,7 +79,7 @@ public class BankServiceTests
 
         var bankService = new BankService(GetHttpClient(handlerMock.Object));
         
-        var result = await bankService.MakePayment(GetExampleRequest());
+        var result = await bankService.MakePayment(GetExampleBankPaymentRequest());
         
         Assert.That(result.Authorized, Is.True);
         Assert.That(result.AuthorizationCode, Is.EqualTo("1234"));
@@ -111,7 +113,7 @@ public class BankServiceTests
 
         var bankService = new BankService(GetHttpClient(handlerMock.Object));
         
-        var result = await bankService.MakePayment(GetExampleRequest());
+        var result = await bankService.MakePayment(GetExampleBankPaymentRequest());
         
         Assert.That(result.Authorized, Is.True);
         Assert.That(result.AuthorizationCode, Is.EqualTo("1234"));
@@ -144,7 +146,7 @@ public class BankServiceTests
 
         var bankService = new BankService(GetHttpClient(handlerMock.Object));
         
-        var result = await bankService.MakePayment(GetExampleRequest());
+        var result = await bankService.MakePayment(GetExampleBankPaymentRequest());
         
         Assert.That(result.Authorized, Is.True);
         Assert.That(result.AuthorizationCode, Is.EqualTo("1234"));
@@ -182,7 +184,7 @@ public class BankServiceTests
 
         var bankService = new BankService(GetHttpClient(handlerMock.Object));
         
-        var result = await bankService.MakePayment(GetExampleRequest());
+        var result = await bankService.MakePayment(GetExampleBankPaymentRequest());
         
         Assert.That(result.Authorized, Is.EqualTo(authorised));
         Assert.That(result.AuthorizationCode, Is.EqualTo(code));
@@ -195,18 +197,6 @@ public class BankServiceTests
         );
     }
     
-    private BankPaymentRequest GetExampleRequest(){
-        var futureTime = DateTimeOffset.Now.AddYears(1);
-        var bankPaymentRequest = new BankPaymentRequest(
-            "123456789012345",
-            futureTime.ToString("MM/yyyy"),
-            "GBP",
-            1000,
-            "1234"
-        );
-        return bankPaymentRequest;
-    }
-
     private HttpClient GetHttpClient(HttpMessageHandler handler)
     {
         return new HttpClient(handler)

@@ -68,5 +68,4 @@ public static class DtoConversions
             authorisationCode: bankPaymentResponse.AuthorizationCode
         );
     }
-
 }
