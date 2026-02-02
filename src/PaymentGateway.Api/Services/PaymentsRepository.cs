@@ -1,19 +1,23 @@
-﻿using PaymentGateway.Api.Models.Internal;
+﻿using PaymentGateway.Api.Models.Exceptions;
+using PaymentGateway.Api.Models.Internal;
 using PaymentGateway.Api.Models.Responses;
 
 namespace PaymentGateway.Api.Services;
 
 public class PaymentsRepository : IPaymentsRepository
 {
-    private List<Payment> Payments = new();
+    private Dictionary<Guid, Payment> Payments = new();
     
     public void Add(Payment payment)
     {
-        Payments.Add(payment);
+        if (Payments.ContainsKey(payment.Id))
+            throw new ApiException(ErrorSummary.InternalError, "Encountered Payment Id that already existed", 500);
+
+        Payments[payment.Id] = payment;
     }
 
     public Payment? Get(Guid id)
     {
-        return Payments.FirstOrDefault(p => p.Id == id);
+        return Payments.GetValueOrDefault(id);
     }
 }

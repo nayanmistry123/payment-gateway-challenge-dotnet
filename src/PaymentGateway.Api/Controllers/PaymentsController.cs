@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Api.Api;
 using PaymentGateway.Api.Models.Exceptions;
 using PaymentGateway.Api.Models.Requests;
@@ -46,18 +45,24 @@ public class PaymentsController : Controller
         }
     }
 
+    /// <summary>
+    /// Sanitise any exceptions by returning an ErrorResponse object
+    /// </summary>
     private ObjectResult HandleApiException(Exception exception)
     {
         if (exception is ApiException apiException)
         {
-            if (apiException.StatusCode == 404)
-                return new NotFoundObjectResult(apiException);
-            if (apiException.StatusCode == 400)
-                return new BadRequestObjectResult(apiException);
+            switch (apiException.StatusCode)
+            {
+                case 404:
+                    return new NotFoundObjectResult(ErrorResponse.FromApiException(apiException));
+                case 400:
+                    return new BadRequestObjectResult(ErrorResponse.FromApiException(apiException));
+            }
         }
-
+        
         Console.WriteLine($"Encountered unexpected exception of type {exception.GetType()}. Exception message: {exception.Message}");
-        return StatusCode(500, "An Unexpected Problem Occurred");
+        return StatusCode(500, ErrorResponse.ForUnexpectedException());
     }
     
 }

@@ -7,6 +7,9 @@ namespace PaymentGateway.Api.Models;
 
 public static class DtoConversions
 {
+    /// <summary>
+    /// Convert an internal Payment DTO to a Web DTO Payment
+    /// </summary>
     public static PaymentResponse ToWebDto(this Payment payment)
     {
         return new PaymentResponse(
@@ -20,6 +23,9 @@ public static class DtoConversions
         );
     }
     
+    /// <summary>
+    /// Convert a PostPaymentRequest Web DTO to an internal payment DTO
+    /// </summary>
     public static MakePayment FromWebDto(this PostPaymentRequest request)
     {
         return new MakePayment(
@@ -32,6 +38,9 @@ public static class DtoConversions
         );
     }
 
+    /// <summary>
+    /// Convert an internal Payment request to a Bank Web DTO
+    /// </summary>
     public static BankPaymentRequest ToBankDto(this MakePayment payment)
     {
         return new BankPaymentRequest(
@@ -43,6 +52,9 @@ public static class DtoConversions
         );
     }
 
+    /// <summary>
+    /// Create a complete payment from an internal payment request and bank payment response
+    /// </summary>
     public static Payment ToCompletePayment(this MakePayment payment, BankPaymentResponse bankPaymentResponse)
     {
         return new Payment(
