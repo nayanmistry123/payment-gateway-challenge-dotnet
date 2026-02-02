@@ -1,11 +1,22 @@
 using PaymentGateway.Api.Models.Exceptions;
 
-namespace PaymentGateway.Api.Models.Responses;
+namespace PaymentGateway.Api.Models.WebApi.Responses;
 
 public class ErrorResponse
 {
+    /// <summary>
+    /// The summary of the error
+    /// </summary>
     public string ErrorSummary { get; }
+    
+    /// <summary>
+    /// The detail of the error
+    /// </summary>
     public string ErrorDetail { get; }
+    
+    /// <summary>
+    /// The HTTP status code of the error
+    /// </summary>
     public int StatusCode { get; }
 
     private ErrorResponse(string errorSummary, string errorDetail, int statusCode)

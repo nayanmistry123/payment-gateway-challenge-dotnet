@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 using PaymentGateway.Api.Models.Exceptions;
-using PaymentGateway.Api.Models.Requests;
+using PaymentGateway.Api.Models.WebApi.Requests;
 
 namespace PaymentGateway.Api.Api;
 
@@ -10,15 +10,17 @@ public static class DtoValidator
     
     public static void ValidatePostPaymentRequest(PostPaymentRequest request)
     {
-        if (request.CardNumber.Length < 14 || 19 < request.CardNumber.Length || !Regex.IsMatch(request.CardNumber, @"^\d+$"))
+        if (request.CardNumber is null 
+            || request.CardNumber.Length < 14 || 19 < request.CardNumber.Length 
+            || !Regex.IsMatch(request.CardNumber, @"^\d+$"))
             ConstructInvalidPaymentException("Card Number must be 14-19 numeric characters");
         
         if (request.ExpiryMonth < 1 || request.ExpiryMonth > 12)
             ConstructInvalidPaymentException("Expiry Month must be between 1-12");
 
         var currentTime = DateTimeOffset.UtcNow;
-        var expiryDateTime = DateTimeOffset.Parse($"{request.ExpiryYear}-{request.ExpiryMonth}-01");
-        if (expiryDateTime <= currentTime)
+        if (!DateTimeOffset.TryParse($"{request.ExpiryYear}-{request.ExpiryMonth}-01", out var expiryDateTime) 
+            || expiryDateTime <= currentTime)
             ConstructInvalidPaymentException("Expiry Month and Year must be in the future");
         
         if (!ValidCurrencyCodes.Contains(request.Currency.ToUpper()))
@@ -26,6 +28,9 @@ public static class DtoValidator
         
         if (request.Cvv.Length < 3 || 4 < request.Cvv.Length || !Regex.IsMatch(request.Cvv, @"^\d+$"))
             ConstructInvalidPaymentException("Cvv must be 3-4 numeric characters");
+        
+        if (request.Amount<=0)
+            ConstructInvalidPaymentException("Amount must be non-negative");
     }
 
     private static void ConstructInvalidPaymentException(string errorDetail)

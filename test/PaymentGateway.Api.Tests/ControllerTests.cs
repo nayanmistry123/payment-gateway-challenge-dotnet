@@ -5,8 +5,9 @@ using PaymentGateway.Api.Api;
 using PaymentGateway.Api.Controllers;
 using PaymentGateway.Api.Models;
 using PaymentGateway.Api.Models.Exceptions;
-using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
+using PaymentGateway.Api.Models.WebApi.Requests;
+using PaymentGateway.Api.Models.WebApi.Responses;
 
 namespace PaymentGateway.Api.Tests;
 
