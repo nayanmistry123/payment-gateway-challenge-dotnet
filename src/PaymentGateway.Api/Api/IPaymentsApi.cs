@@ -6,7 +6,7 @@ namespace PaymentGateway.Api.Api;
 
 public interface IPaymentsApi
 {
-    GetPaymentResponse GetPayment(Guid id);
+    PaymentResponse GetPayment(Guid id);
 
-    PostPaymentResponse MakePayment(PostPaymentRequest payment);
+    PaymentResponse MakePayment(PostPaymentRequest paymentRequest);
 }

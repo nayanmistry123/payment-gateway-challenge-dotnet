@@ -1,19 +1,17 @@
 namespace PaymentGateway.Api.Models.Internal;
 
 /// <summary>
-/// Internal class for a successfully stored payment
+/// Internal class for a payment request
 /// </summary>
-public class Payment
+public class MakePayment
 {
-    public Payment(
+    public MakePayment(
         Guid id,
         string cardNumber,
         DateTimeOffset expiryDate,
         string currency,
         int amount,
-        string cvv,
-        bool paymentAuthorised,
-        string authorisationCode)
+        string cvv)
     {
         Id = id;
         CardNumber = cardNumber;
@@ -21,8 +19,6 @@ public class Payment
         Currency = currency;
         Amount = amount;
         Cvv = cvv;
-        PaymentAuthorised = paymentAuthorised;
-        AuthorisationCode = authorisationCode;
     }
 
     public Guid Id { get; set; }
@@ -31,7 +27,4 @@ public class Payment
     public string Currency { get; set; }
     public int Amount { get; set; }
     public string Cvv { get; set; }
-    public bool PaymentAuthorised { get; set; }
-    public string AuthorisationCode { get; set; }
-
 }

@@ -1,8 +1,16 @@
 ﻿namespace PaymentGateway.Api.Models.Responses;
 
-public class GetPaymentResponse
+public class PaymentResponse
 {
-    public GetPaymentResponse(
+    public Guid Id { get; set; }
+    public PaymentStatus Status { get; set; }
+    public string CardNumberLastFour { get; set; }
+    public int ExpiryMonth { get; set; }
+    public int ExpiryYear { get; set; }
+    public string Currency { get; set; }
+    public int Amount { get; set; }
+
+    public PaymentResponse(
         Guid id,
         PaymentStatus status,
         string cardNumberLastFour,
@@ -10,7 +18,7 @@ public class GetPaymentResponse
         int expiryYear,
         string currency,
         int amount
-        )
+    )
     {
         Id = id;
         Status = status;
@@ -20,12 +28,4 @@ public class GetPaymentResponse
         Currency = currency;
         Amount = amount;
     }
-    
-    public Guid Id { get; set; }
-    public PaymentStatus Status { get; set; }
-    public string CardNumberLastFour { get; set; }
-    public int ExpiryMonth { get; set; }
-    public int ExpiryYear { get; set; }
-    public string Currency { get; set; }
-    public int Amount { get; set; }
 }

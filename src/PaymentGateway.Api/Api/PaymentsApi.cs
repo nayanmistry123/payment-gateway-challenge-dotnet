@@ -1,3 +1,4 @@
+using PaymentGateway.Api.Models;
 using PaymentGateway.Api.Models.Exceptions;
 using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
@@ -8,36 +9,42 @@ namespace PaymentGateway.Api.Api;
 public class PaymentsApi : IPaymentsApi
 {
     private readonly IPaymentsRepository _paymentsRepository;
+    private readonly IBankService _bankService;
 
-    public PaymentsApi(IPaymentsRepository paymentsRepository)
+    public PaymentsApi(IPaymentsRepository paymentsRepository, IBankService bankService)
     {
         _paymentsRepository = paymentsRepository;
+        _bankService = bankService;
     }
     
-    public GetPaymentResponse GetPayment(Guid id)
+    public PaymentResponse GetPayment(Guid id)
     {
         var maybePayment = _paymentsRepository.Get(id);
 
         if (maybePayment is null)
             throw new ApiException(
                 ErrorSummary.PaymentNotFound,
-                "Payment with Id {id} does not exist",
+                $"Payment with Id {id} does not exist",
                 404
             );
 
-        return new GetPaymentResponse(
-            maybePayment.Id,
-            maybePayment.Status,
-            maybePayment.CardNumber.Substring(maybePayment.CardNumber.Length - 4),
-            maybePayment.ExpiryDate.Month,
-            maybePayment.ExpiryDate.Year,
-            maybePayment.Currency,
-            maybePayment.Amount
-        );
+        return maybePayment.ToWebDto();
     }
 
-    public PostPaymentResponse MakePayment(PostPaymentRequest payment)
+    public PaymentResponse MakePayment(PostPaymentRequest paymentRequest)
     {
-        throw new NotImplementedException();
+        DtoValidator.ValidatePostPaymentRequest(paymentRequest);
+
+        var makePayment = paymentRequest.FromWebDto();
+        
+        //TODO think about transaction handling
+        var bankServiceResponse = _bankService.MakePayment(makePayment.ToBankDto());
+
+        var confirmedPayment = makePayment.ToCompletePayment(bankServiceResponse);
+
+        _paymentsRepository.Add(confirmedPayment);
+
+        return confirmedPayment.ToWebDto();
     }
+
 }
