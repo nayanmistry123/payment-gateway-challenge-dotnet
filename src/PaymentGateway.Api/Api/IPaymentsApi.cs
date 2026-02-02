@@ -1,4 +1,3 @@
-using PaymentGateway.Api.Models.Internal;
 using PaymentGateway.Api.Models.Requests;
 using PaymentGateway.Api.Models.Responses;
 
@@ -8,5 +7,5 @@ public interface IPaymentsApi
 {
     PaymentResponse GetPayment(Guid id);
 
-    PaymentResponse MakePayment(PostPaymentRequest paymentRequest);
+    Task<PaymentResponse> MakePayment(PostPaymentRequest paymentRequest);
 }

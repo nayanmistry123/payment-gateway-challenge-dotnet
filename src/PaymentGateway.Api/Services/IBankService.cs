@@ -4,5 +4,5 @@ namespace PaymentGateway.Api.Services;
 
 public interface IBankService
 {
-    BankPaymentResponse MakePayment(BankPaymentRequest request);
+    Task<BankPaymentResponse> MakePayment(BankPaymentRequest request);
 }

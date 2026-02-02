@@ -3,5 +3,6 @@ namespace PaymentGateway.Api.Models.Exceptions;
 public enum ErrorSummary
 {
     InvalidPaymentRequest,
-    PaymentNotFound
+    PaymentNotFound,
+    InternalError
 }

@@ -31,15 +31,14 @@ public class PaymentsApi : IPaymentsApi
         return maybePayment.ToWebDto();
     }
 
-    public PaymentResponse MakePayment(PostPaymentRequest paymentRequest)
+    public async Task<PaymentResponse> MakePayment(PostPaymentRequest paymentRequest)
     {
         DtoValidator.ValidatePostPaymentRequest(paymentRequest);
 
         var makePayment = paymentRequest.FromWebDto();
         
         //TODO think about transaction handling
-        var bankServiceResponse = _bankService.MakePayment(makePayment.ToBankDto());
-
+        var bankServiceResponse = await _bankService.MakePayment(makePayment.ToBankDto());
         var confirmedPayment = makePayment.ToCompletePayment(bankServiceResponse);
 
         _paymentsRepository.Add(confirmedPayment);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Api.Api;
 using PaymentGateway.Api.Models.Exceptions;
 using PaymentGateway.Api.Models.Requests;
@@ -23,7 +24,7 @@ public class PaymentsController : Controller
         try
         {
             var payment =  _paymentsApi.GetPayment(id);
-            return new OkObjectResult(payment);
+            return Ok(payment);
         }
         catch (Exception e)
         {
@@ -36,8 +37,8 @@ public class PaymentsController : Controller
     {
         try
         {
-            var payment = _paymentsApi.MakePayment(postPaymentRequest);
-            return new OkObjectResult(payment);
+            var payment = await _paymentsApi.MakePayment(postPaymentRequest);
+            return Ok(payment);
         }
         catch (Exception e)
         {

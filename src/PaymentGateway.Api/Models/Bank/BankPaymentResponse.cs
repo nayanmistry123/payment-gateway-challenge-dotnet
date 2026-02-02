@@ -2,12 +2,12 @@ namespace PaymentGateway.Api.Models.Bank;
 
 public class BankPaymentResponse
 {
-    public bool Authorised { get; set; }
-    public string AuthorisationCode { get; set; }
+    public bool Authorized { get; set; }
+    public string AuthorizationCode { get; set; }
 
-    public BankPaymentResponse(bool authorised, string authorisationCode)
+    public BankPaymentResponse(bool authorized, string authorizationCode)
     {
-        Authorised = authorised;
-        AuthorisationCode = authorisationCode;
+        Authorized = authorized;
+        AuthorizationCode = authorizationCode;
     }
 }

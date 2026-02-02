@@ -36,7 +36,7 @@ public static class DtoConversions
     {
         return new BankPaymentRequest(
             payment.CardNumber,
-            payment.ExpiryDate.ToString(), //TODO format correctly
+            payment.ExpiryDate.ToString("MM/yyyy"),
             payment.Currency,
             payment.Amount,
             payment.Cvv
@@ -52,8 +52,8 @@ public static class DtoConversions
             currency: payment.Currency,
             amount: payment.Amount,
             cvv: payment.Cvv,
-            paymentAuthorised: bankPaymentResponse.Authorised,
-            authorisationCode: bankPaymentResponse.AuthorisationCode
+            paymentAuthorised: bankPaymentResponse.Authorized,
+            authorisationCode: bankPaymentResponse.AuthorizationCode
         );
     }
 

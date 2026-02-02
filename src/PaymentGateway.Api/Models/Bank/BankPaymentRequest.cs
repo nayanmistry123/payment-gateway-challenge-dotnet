@@ -2,11 +2,11 @@ namespace PaymentGateway.Api.Models.Bank;
 
 public class BankPaymentRequest
 {
-    private string CardNumber { get; set; }
-    private string ExpiryDate { get; set; }
-    private string Currency { get; set; }
-    private int Amount { get; set; }
-    private string Cvv { get; set; }
+    public string CardNumber { get; set; }
+    public string ExpiryDate { get; set; }
+    public string Currency { get; set; }
+    public int Amount { get; set; }
+    public string Cvv { get; set; }
 
     public BankPaymentRequest(
         string cardNumber,
