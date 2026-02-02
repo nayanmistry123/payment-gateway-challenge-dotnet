@@ -171,7 +171,7 @@ public class ControllerTests
         var futureTime = DateTimeOffset.Now.AddYears(1);
         return new PaymentResponse(
             Guid.NewGuid(),
-            PaymentStatus.Authorized,
+            PaymentStatus.Authorized.ToString(),
             "1234",
             futureTime.Month,
             futureTime.Year,

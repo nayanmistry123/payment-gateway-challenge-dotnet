@@ -14,7 +14,9 @@ public static class DtoConversions
     {
         return new PaymentResponse(
             id: payment.Id,
-            status: payment.PaymentAuthorised ? PaymentStatus.Authorized : PaymentStatus.Declined,
+            status: payment.PaymentAuthorised 
+                ? PaymentStatus.Authorized.ToString() 
+                : PaymentStatus.Declined.ToString(),
             cardNumberLastFour: payment.CardNumber.Substring(payment.CardNumber.Length - 4),
             expiryMonth: payment.ExpiryDate.Month,
             expiryYear: payment.ExpiryDate.Year,

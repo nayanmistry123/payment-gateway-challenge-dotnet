@@ -11,12 +11,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IPaymentsRepository, PaymentsRepository>();
-builder.Services.AddHttpClient<IBankService>(client =>
+builder.Services.AddHttpClient<BankService>(client =>
 {
     client.BaseAddress = new Uri("http://localhost:8080/");
 });
 
-builder.Services.AddTransient<IBankService, BankService>();
+builder.Services.AddTransient<IBankService>(sp =>
+    sp.GetRequiredService<BankService>());
 builder.Services.AddTransient<IPaymentsApi, PaymentsApi>();
 
 var app = builder.Build();

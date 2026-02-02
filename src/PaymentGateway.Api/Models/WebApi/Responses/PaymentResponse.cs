@@ -3,7 +3,7 @@
 public class PaymentResponse
 {
     public Guid Id { get; set; }
-    public PaymentStatus Status { get; set; }
+    public string Status { get; set; }
     public string CardNumberLastFour { get; set; }
     public int ExpiryMonth { get; set; }
     public int ExpiryYear { get; set; }
@@ -12,7 +12,7 @@ public class PaymentResponse
 
     public PaymentResponse(
         Guid id,
-        PaymentStatus status,
+        string status,
         string cardNumberLastFour,
         int expiryMonth,
         int expiryYear,
