@@ -14,8 +14,6 @@ namespace PaymentGateway.Api.Tests;
 
 public class PaymentsIntegrationTests
 {
-    private readonly Random _random = new();
-    
     [Test]
     public async Task RetrievesAnExistingPaymentSuccessfully()
     {
@@ -33,7 +31,7 @@ public class PaymentsIntegrationTests
         
         var paymentsRepository = new PaymentsRepository();
         paymentsRepository.Add(payment);
-        var bankService = new BankService();
+        var bankService = new BankService(new HttpClient());
         var paymentsApi = new PaymentsApi(paymentsRepository, bankService);
         var paymentsController = new PaymentsController(paymentsApi);
 
@@ -134,7 +132,7 @@ public class PaymentsIntegrationTests
         IBankService? bankService = null)
     {
         var paymentsApi =
-            new PaymentsApi(paymentsRepository ?? new PaymentsRepository(), bankService ?? new BankService());
+            new PaymentsApi(paymentsRepository ?? new PaymentsRepository(), bankService ?? new BankService(new HttpClient()));
         var paymentsController = new PaymentsController(paymentsApi);
 
         return paymentsController;
