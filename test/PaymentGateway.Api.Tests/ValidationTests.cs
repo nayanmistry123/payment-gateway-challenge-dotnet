@@ -20,6 +20,8 @@ public class ValidationTests
             "Card Number must be 14-19 numeric characters").SetName("Long Card Number");
         yield return new TestCaseData(GetPostPaymentRequest(cardNumber: "1234567890123a"),
             "Card Number must be 14-19 numeric characters").SetName("Alphanumeric Card Number");
+        yield return new TestCaseData(GetPostPaymentRequest(cardNumber: null),
+            "Card Number must be 14-19 numeric characters").SetName("Null Card Number");
         
         yield return new TestCaseData(GetPostPaymentRequest(expiryMonth: 0),
             "Expiry Month must be between 1-12").SetName("0 Expiry Month");
@@ -37,6 +39,8 @@ public class ValidationTests
             "Currency must be one of: USD, GBP, EUR").SetName("Invalid Length Currency Code");
         yield return new TestCaseData(GetPostPaymentRequest(currency: "AUD"),
             "Currency must be one of: USD, GBP, EUR").SetName("Unsupported Currency Code");
+        yield return new TestCaseData(GetPostPaymentRequest(currency: null),
+            "Currency must be one of: USD, GBP, EUR").SetName("Null Currency Code");
         
         yield return new TestCaseData(GetPostPaymentRequest(cvv: "12"),
             "Cvv must be 3-4 numeric characters").SetName("Short Cvv");
@@ -44,6 +48,8 @@ public class ValidationTests
             "Cvv must be 3-4 numeric characters").SetName("Long Cvv");
         yield return new TestCaseData(GetPostPaymentRequest(cvv: "123a"),
             "Cvv must be 3-4 numeric characters").SetName("Alphanumeric Cvv");
+        yield return new TestCaseData(GetPostPaymentRequest(cvv: null),
+            "Cvv must be 3-4 numeric characters").SetName("Null Cvv");
     }
     
     [TestCaseSource(nameof(InvalidPaymentRequests))]

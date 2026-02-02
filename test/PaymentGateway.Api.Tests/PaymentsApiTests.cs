@@ -102,4 +102,21 @@ public class PaymentsApiTests
         Assert.That(savedPayment.PaymentAuthorised, Is.EqualTo(bankServiceResponse.Authorized));
         Assert.That(savedPayment.CardNumber, Is.EqualTo(paymentRequest.CardNumber));
     }
+    
+    [Test]
+    public async Task ProcessPayment_WithInvalidRequest_ThrowsApiException()
+    {
+        var mockRepository = new Mock<IPaymentsRepository>();
+        var mockBankService = new Mock<IBankService>();
+
+        var paymentRequest = GetPostPaymentRequest(cardNumber: "1");
+        
+        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
+        
+        var exception = Assert.ThrowsAsync<ApiException>(() => api.MakePayment(paymentRequest));
+        
+        Assert.That(exception!.StatusCode, Is.EqualTo(400));
+        Assert.That(exception!.ErrorSummary, Is.EqualTo(ErrorSummary.InvalidPaymentRequest));
+        Assert.That(exception!.ErrorDetail, Is.EqualTo("Card Number must be 14-19 numeric characters"));
+    }
 }

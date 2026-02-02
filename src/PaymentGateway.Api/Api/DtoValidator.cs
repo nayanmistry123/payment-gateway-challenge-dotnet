@@ -23,10 +23,10 @@ public static class DtoValidator
             || expiryDateTime <= currentTime)
             ConstructInvalidPaymentException("Expiry Month and Year must be in the future");
         
-        if (!ValidCurrencyCodes.Contains(request.Currency.ToUpper()))
+        if (request.Currency is null || !ValidCurrencyCodes.Contains(request.Currency.ToUpper()))
             ConstructInvalidPaymentException($"Currency must be one of: {string.Join( ", ", ValidCurrencyCodes)}");
         
-        if (request.Cvv.Length < 3 || 4 < request.Cvv.Length || !Regex.IsMatch(request.Cvv, @"^\d+$"))
+        if (request.Cvv is null || request.Cvv.Length < 3 || 4 < request.Cvv.Length || !Regex.IsMatch(request.Cvv, @"^\d+$"))
             ConstructInvalidPaymentException("Cvv must be 3-4 numeric characters");
         
         if (request.Amount<=0)
