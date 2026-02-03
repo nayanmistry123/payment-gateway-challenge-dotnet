@@ -10,6 +10,8 @@ using PaymentGateway.Api.Models.Responses;
 using PaymentGateway.Api.Models.WebApi.Requests;
 using PaymentGateway.Api.Services;
 
+using static PaymentGateway.Api.Tests.TestHelpers;
+
 namespace PaymentGateway.Api.Tests;
 
 public class PaymentsIntegrationTests
@@ -17,7 +19,7 @@ public class PaymentsIntegrationTests
     [Test]
     public async Task RetrievesAnExistingPaymentSuccessfully()
     {
-        // Arrange
+        //GIVEN an existing payment
         var payment = new Payment(
             Guid.NewGuid(),
             "123456789012345",
@@ -31,30 +33,34 @@ public class PaymentsIntegrationTests
         
         var paymentsRepository = new PaymentsRepository();
         paymentsRepository.Add(payment);
-        var bankService = new BankService(new HttpClient());
-        var paymentsApi = new PaymentsApi(paymentsRepository, bankService);
-        var paymentsController = new PaymentsController(paymentsApi);
-
-        var response = await paymentsController.GetPaymentAsync(payment.Id);
-        Assert.That(response.Result is OkObjectResult);
-        var result = ((OkObjectResult)response.Result).Value as PaymentResponse;
+        var paymentsController = InitialiseApp(paymentsRepository);
         
-        Assert.That(result.Id, Is.EqualTo(payment.Id));
+        //WHEN we retrieve that payment
+        var response = await paymentsController.GetPaymentAsync(payment.Id);
+        
+        //THEN the payment is returned successfully
+        Assert.That(response.Result is OkObjectResult);
+        var result = ((OkObjectResult)response.Result!).Value as PaymentResponse;
+        AssertEquals(result!, payment);
     }
     
     [Test]
     public async Task Returns404IfPaymentNotFound()
     {
+        //GIVEN a payment that does not exist
         var controller = InitialiseApp();
 
+        //WHEN we attempt to retrieve that payment
         var response = await controller.GetPaymentAsync(Guid.NewGuid());
         
+        //THEN a 404 response is returned
         Assert.That(response.Result is NotFoundObjectResult);
     }
 
     [Test]
-    public async Task CanCreateAndRetrieveAPayment_WithMockedBankService()
+    public async Task CanCreatePayment_WithMockedBankService()
     {
+        //GIVEN no payments exist
         var mockedBankService = new Mock<IBankService>();
 
         mockedBankService
@@ -63,6 +69,7 @@ public class PaymentsIntegrationTests
 
         var controller = InitialiseApp(bankService: mockedBankService.Object);
 
+        //WHEN we create a payment
         var futureDate = DateTimeOffset.Now.AddYears(1);
         var paymentRequest = new PostPaymentRequest(
             "123456789012345",
@@ -73,13 +80,87 @@ public class PaymentsIntegrationTests
             "1234"
         );
 
+        //The payment is successful
         var response = await controller.ProcessPayment(paymentRequest);
         
-        Assert.That(response.Result is OkObjectResult o);
+        Assert.That(response.Result is OkObjectResult);
+        var okResponse1 = (OkObjectResult)response.Result!;
+        Assert.That(okResponse1.Value is PaymentResponse);
+        var okPaymentResponse1 = (PaymentResponse)okResponse1.Value!;
+        AssertEquals(paymentRequest, okPaymentResponse1);
+        Assert.That(okPaymentResponse1.Status, Is.EqualTo("Authorized"));    
     }
+    
+    [Test]
+    public async Task CanCreateAndRetrieveMultiplePayments_WithMockedBankService()
+    {
+        //GIVEN an instance of the application with a mocked bank service
+        var mockedBankService = new Mock<IBankService>();
+        mockedBankService
+            .SetupSequence(b => b.MakePayment(It.IsAny<BankPaymentRequest>()))
+            .ReturnsAsync(new BankPaymentResponse(true, "1234"))
+            .ReturnsAsync(new BankPaymentResponse(false, "5678"));
+        var controller = InitialiseApp(bankService: mockedBankService.Object);
 
-    // Requires a running bank service on localhost:8080
-    [Theory]
+        //WHEN we create a payment
+        var futureDate = DateTimeOffset.Now.AddYears(1);
+        var paymentRequest1 = new PostPaymentRequest(
+            "123456789012345",
+            futureDate.Month,
+            futureDate.Year,
+            "GBP",
+            1000,
+            "1234"
+        );
+        var request1Response = await controller.ProcessPayment(paymentRequest1);
+        
+        //THEN the payment is created correctly
+        Assert.That(request1Response.Result is OkObjectResult);
+        var okResponse1 = (OkObjectResult)request1Response.Result!;
+        Assert.That(okResponse1.Value is PaymentResponse);
+        var okPaymentResponse1 = (PaymentResponse)okResponse1.Value!;
+        AssertEquals(paymentRequest1, okPaymentResponse1);
+        Assert.That(okPaymentResponse1.Status, Is.EqualTo("Authorized"));
+        
+        //WHEN we create an additional payment
+        var paymentRequest2 = new PostPaymentRequest(
+            "098765432123456",
+            futureDate.Month + 1,
+            futureDate.Year + 2,
+            "USD",
+            2500,
+            "0123"
+        );
+        var request2Response = await controller.ProcessPayment(paymentRequest2);
+        
+        //THEN the payment is created correctly
+        Assert.That(request2Response.Result is OkObjectResult);
+        var okResponse2 = (OkObjectResult)request2Response.Result!;
+        Assert.That(okResponse2.Value is PaymentResponse);
+        var okPaymentResponse2 = (PaymentResponse)okResponse2.Value!;
+        AssertEquals(paymentRequest2, okPaymentResponse2);
+        Assert.That(okPaymentResponse2.Status, Is.EqualTo("Declined"));
+        
+        //WHEN we request the first payment
+        var retrievePayment1Response = await controller.GetPaymentAsync(okPaymentResponse1.Id);
+        //THEN the payment is returned correctly 
+        Assert.That(retrievePayment1Response.Result is OkObjectResult);
+        var okRetrievePayment1Response = (OkObjectResult)retrievePayment1Response.Result!;
+        Assert.That(okRetrievePayment1Response.Value is PaymentResponse);
+        var okRetrievePayment1 = (PaymentResponse)okRetrievePayment1Response.Value!;
+        AssertEquals(okRetrievePayment1, okPaymentResponse1);
+        
+        //WHEN we request the second payment
+        var retrievePayment2Response = await controller.GetPaymentAsync(okPaymentResponse2.Id);
+        //THEN the payment is returned correctly 
+        Assert.That(retrievePayment2Response.Result is OkObjectResult);
+        var okRetrievePayment2Response = (OkObjectResult)retrievePayment2Response.Result!;
+        Assert.That(okRetrievePayment2Response.Value is PaymentResponse);
+        var okRetrievePayment2 = (PaymentResponse)okRetrievePayment2Response.Value!;
+        AssertEquals(okRetrievePayment2, okPaymentResponse2);
+    }
+    
+    [Explicit("Requires a running bank service on localhost:8080")]
     public async Task CanCreateAndRetrieveAPayment_WithRealBankService(bool authorised)
     {
         //GIVEN an instance of the API connected to a localhost bank simulator
@@ -105,12 +186,8 @@ public class PaymentsIntegrationTests
         var paymentResponse = (PaymentResponse)okResponseResult.Value!;
         
         //AND the response contains the expected payment information
-        Assert.That(paymentResponse.Id, Is.Not.Null);
         Assert.That(paymentResponse.Status, Is.EqualTo(authorised ? PaymentStatus.Authorized : PaymentStatus.Declined));
-        Assert.That(paymentResponse.Amount, Is.EqualTo(1000));
-        Assert.That(paymentResponse.ExpiryMonth, Is.EqualTo(futureDate.Month));
-        Assert.That(paymentResponse.ExpiryYear, Is.EqualTo(futureDate.Year));
-        Assert.That(paymentResponse.CardNumberLastFour, Is.EqualTo(authorised ? "2345" : "2346"));
+        AssertEquals(paymentRequest, paymentResponse);
 
         var retrievedPaymentResponse = await controller.GetPaymentAsync(paymentResponse.Id);
         Assert.That(retrievedPaymentResponse.Result is OkObjectResult);
@@ -118,13 +195,7 @@ public class PaymentsIntegrationTests
         
         Assert.That(okRetrievedResult.Value is not null);
         var retrievedPayment = (PaymentResponse)okRetrievedResult.Value!;
-        
-        Assert.That(retrievedPayment.Id, Is.EqualTo(paymentResponse.Id));
-        Assert.That(retrievedPayment.Status, Is.EqualTo(authorised ? PaymentStatus.Authorized : PaymentStatus.Declined));
-        Assert.That(retrievedPayment.Amount, Is.EqualTo(1000));
-        Assert.That(retrievedPayment.ExpiryMonth, Is.EqualTo(futureDate.Month));
-        Assert.That(retrievedPayment.ExpiryYear, Is.EqualTo(futureDate.Year));
-        Assert.That(retrievedPayment.CardNumberLastFour, Is.EqualTo(authorised ? "2345" : "2346"));
+        AssertEquals(retrievedPayment, paymentResponse);
     }
 
 
@@ -136,5 +207,5 @@ public class PaymentsIntegrationTests
         var paymentsController = new PaymentsController(paymentsApi);
 
         return paymentsController;
-    }
+   }
 }

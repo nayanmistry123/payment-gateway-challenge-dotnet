@@ -1,5 +1,8 @@
+using NUnit.Framework;
+
 using PaymentGateway.Api.Models.Bank;
 using PaymentGateway.Api.Models.Internal;
+using PaymentGateway.Api.Models.Responses;
 using PaymentGateway.Api.Models.WebApi.Requests;
 
 namespace PaymentGateway.Api.Tests;
@@ -57,6 +60,35 @@ public static class TestHelpers
             cvv,
             paymentAuthorised,
             authorisationCode);
-    } 
+    }
+
+    public static void AssertEquals(PostPaymentRequest paymentRequest, PaymentResponse paymentResponse)
+    {
+        Assert.That(paymentRequest.Amount, Is.EqualTo(paymentResponse.Amount));
+        Assert.That(paymentRequest.Currency, Is.EqualTo(paymentResponse.Currency));
+        Assert.That(paymentRequest.ExpiryMonth, Is.EqualTo(paymentResponse.ExpiryMonth));
+        Assert.That(paymentRequest.ExpiryYear, Is.EqualTo(paymentResponse.ExpiryYear));
+        Assert.That(paymentRequest.CardNumber.Substring(paymentRequest.CardNumber.Length-4), Is.EqualTo(paymentResponse.CardNumberLastFour));
+    }
     
+    public static void AssertEquals(PaymentResponse response1, PaymentResponse response2)
+    {
+        Assert.That(response1.Id, Is.EqualTo(response2.Id));
+        Assert.That(response1.Amount, Is.EqualTo(response2.Amount));
+        Assert.That(response1.Currency, Is.EqualTo(response2.Currency));
+        Assert.That(response1.ExpiryMonth, Is.EqualTo(response2.ExpiryMonth));
+        Assert.That(response1.ExpiryYear, Is.EqualTo(response2.ExpiryYear));
+        Assert.That(response1.CardNumberLastFour, Is.EqualTo(response2.CardNumberLastFour));
+        Assert.That(response1.Status, Is.EqualTo(response2.Status));
+    }
+    
+    public static void AssertEquals(PaymentResponse response, Payment payment)
+    {
+        Assert.That(response.Id, Is.EqualTo(payment.Id));
+        Assert.That(response.CardNumberLastFour, Is.EqualTo(payment.CardNumber.Substring(payment.CardNumber.Length-4)));
+        Assert.That(response.Currency, Is.EqualTo(payment.Currency));
+        Assert.That(response.Amount, Is.EqualTo(payment.Amount));
+        Assert.That(response.Status, Is.EqualTo(payment.PaymentAuthorised ? "Authorized" : "Declined"));
+    }
+
 }

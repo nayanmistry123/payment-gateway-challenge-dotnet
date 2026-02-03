@@ -1,14 +1,10 @@
 using System.Net;
 using System.Text.Json;
-
 using Moq;
 using Moq.Protected;
-
 using NUnit.Framework;
-
 using PaymentGateway.Api.Models.Bank;
 using PaymentGateway.Api.Services;
-
 using static PaymentGateway.Api.Tests.TestHelpers;
 
 namespace PaymentGateway.Api.Tests;
@@ -26,7 +22,7 @@ public class BankServiceTests
     [Test]
     public async Task MakePayment_GivenServiceReturns500FourTimes_ThrowsApiException()
     {
-        var handlerMock = new Mock<HttpMessageHandler>();
+        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
         handlerMock
             .Protected()
@@ -60,7 +56,7 @@ public class BankServiceTests
     [Test]
     public async Task MakePayment_GivenServiceReturns500ThreeTimes_RetriesThreeTimesSuccessfully()
     {
-        var handlerMock = new Mock<HttpMessageHandler>();
+        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         
         handlerMock
             .Protected()
@@ -95,7 +91,7 @@ public class BankServiceTests
     [Test]
     public async Task MakePayment_GivenServiceReturns500Twice_RetriesTwiceSuccessfully()
     {
-        var handlerMock = new Mock<HttpMessageHandler>();
+        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         
         handlerMock
             .Protected()
@@ -129,7 +125,7 @@ public class BankServiceTests
     [Test]
     public async Task MakePayment_GivenServiceReturns500Once_RetriesOnceSuccessfully()
     {
-        var handlerMock = new Mock<HttpMessageHandler>();
+        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         
         handlerMock
             .Protected()
@@ -165,7 +161,7 @@ public class BankServiceTests
         bool authorised,
         string code)
     {
-        var handlerMock = new Mock<HttpMessageHandler>();
+        var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
         
         var responseJson = JsonSerializer.Serialize(new BankPaymentResponse(authorised, code),
             new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower });

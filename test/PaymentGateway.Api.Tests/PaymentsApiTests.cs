@@ -1,7 +1,6 @@
 using Moq;
 using NUnit.Framework;
 using PaymentGateway.Api.Api;
-using PaymentGateway.Api.Models;
 using PaymentGateway.Api.Models.Bank;
 using PaymentGateway.Api.Models.Exceptions;
 using PaymentGateway.Api.Models.Internal;
@@ -16,6 +15,7 @@ public class PaymentsApiTests
     [Test]
     public void GetPayment_WhenPaymentDoesNotExist_ThrowsApiException()
     {
+        //GIVEN an API
         var mockRepository = new Mock<IPaymentsRepository>();
         var mockBankService = new Mock<IBankService>();
 
@@ -25,8 +25,10 @@ public class PaymentsApiTests
             .Setup(m => m.Get(It.Is<Guid>(g => g.Equals(guid))))
             .Returns((Payment?)null);
 
+        //WHEN we request a payment that does not exist
         var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
 
+        //THEN a 404 exception is returned
         var exception = Assert.Throws<ApiException>(() => api.GetPayment(guid));
         
         Assert.That(exception!.StatusCode, Is.EqualTo(404));
@@ -37,6 +39,7 @@ public class PaymentsApiTests
     [Test]
     public void GetPayment_WhenPaymentDoesExist_ReturnsPayment()
     {
+        //GIVEN an API 
         var mockRepository = new Mock<IPaymentsRepository>();
         var mockBankService = new Mock<IBankService>();
 
@@ -47,20 +50,18 @@ public class PaymentsApiTests
             .Returns(payment);
 
         var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
+        
+        //WHEN we request an existing payment
         var response = api.GetPayment(payment.Id);
         
-        Assert.That(response.Id, Is.EqualTo(payment.Id));
-        Assert.That(response.Amount, Is.EqualTo(payment.Amount));
-        Assert.That(response.Currency, Is.EqualTo(payment.Currency));
-        Assert.That(response.Status, Is.EqualTo(payment.PaymentAuthorised ? PaymentStatus.Authorized : PaymentStatus.Declined));
-        Assert.That(response.ExpiryMonth, Is.EqualTo(payment.ExpiryDate.Month));
-        Assert.That(response.ExpiryYear, Is.EqualTo(payment.ExpiryDate.Year));
-        Assert.That(response.CardNumberLastFour, Is.EqualTo(payment.CardNumber.Substring(payment.CardNumber.Length-4)));
+        //THEN the payment is returned
+        AssertEquals(response, payment);
     }
     
     [Test]
     public async Task ProcessPayment_WithValidRequest_SavesPayment()
     {
+        //GIVEN an API
         var mockRepository = new Mock<IPaymentsRepository>();
         var mockBankService = new Mock<IBankService>();
 
@@ -82,17 +83,16 @@ public class PaymentsApiTests
             savedPayments.Add(p);
         });
         
+        //WHEN we make a valid payment request
         var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
         var response = await api.MakePayment(paymentRequest);
         
-        Assert.That(response.Amount, Is.EqualTo(paymentRequest.Amount));
-        Assert.That(response.Currency, Is.EqualTo(paymentRequest.Currency));
-        Assert.That(response.Status, Is.EqualTo(bankServiceResponse.Authorized ? PaymentStatus.Authorized : PaymentStatus.Declined));
-        Assert.That(response.ExpiryMonth, Is.EqualTo(paymentRequest.ExpiryMonth));
-        Assert.That(response.ExpiryYear, Is.EqualTo(paymentRequest.ExpiryYear));
-        Assert.That(response.CardNumberLastFour, Is.EqualTo(paymentRequest.CardNumber.Substring(paymentRequest.CardNumber.Length-4)));
+        //THEN the response is successful
+        AssertEquals(paymentRequest, response);
         
+        //AND the payment has been saved 
         Assert.That(savedPayments.Count, Is.EqualTo(1));
+        
         var savedPayment = savedPayments[0];
         Assert.That(savedPayment.Amount, Is.EqualTo(paymentRequest.Amount));
         Assert.That(savedPayment.Currency, Is.EqualTo(paymentRequest.Currency));
@@ -106,13 +106,15 @@ public class PaymentsApiTests
     [Test]
     public async Task ProcessPayment_WithInvalidRequest_ThrowsApiException()
     {
+        //GIVEN an api
         var mockRepository = new Mock<IPaymentsRepository>();
         var mockBankService = new Mock<IBankService>();
+        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
 
+        //WHEN we make an invalid request
         var paymentRequest = GetPostPaymentRequest(cardNumber: "1");
         
-        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
-        
+        //THEN the API throws a 400 exception
         var exception = Assert.ThrowsAsync<ApiException>(() => api.MakePayment(paymentRequest));
         
         Assert.That(exception!.StatusCode, Is.EqualTo(400));
