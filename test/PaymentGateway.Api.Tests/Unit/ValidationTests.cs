@@ -1,4 +1,5 @@
 using NUnit.Framework;
+
 using PaymentGateway.Api.Api;
 using PaymentGateway.Api.Models.Exceptions;
 using PaymentGateway.Api.Models.WebApi.Requests;
@@ -7,7 +8,7 @@ using static PaymentGateway.Api.Tests.TestHelpers;
 
 using Assert = NUnit.Framework.Assert;
 
-namespace PaymentGateway.Api.Tests;
+namespace PaymentGateway.Api.Tests.Unit;
 
 [TestFixture]
 public class ValidationTests

@@ -1,5 +1,7 @@
 using Moq;
+
 using NUnit.Framework;
+
 using PaymentGateway.Api.Api;
 using PaymentGateway.Api.Models.Bank;
 using PaymentGateway.Api.Models.Exceptions;
@@ -8,7 +10,7 @@ using PaymentGateway.Api.Services;
 
 using static PaymentGateway.Api.Tests.TestHelpers;
 
-namespace PaymentGateway.Api.Tests;
+namespace PaymentGateway.Api.Tests.Unit;
 
 public class PaymentsApiTests
 {

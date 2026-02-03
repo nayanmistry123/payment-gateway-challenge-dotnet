@@ -1,10 +1,12 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+
 using NUnit.Framework;
+
 using PaymentGateway.Api.Models.Exceptions;
 
-namespace PaymentGateway.Api.Tests;
+namespace PaymentGateway.Api.Tests.End2End;
 
 /// <summary>
 /// Requires Payments API to be running on localhost:7092
@@ -97,7 +99,7 @@ public class PaymentsEndToEndTests
         Assert.That(successRetrievalResponse["amount"].GetInt32(), Is.EqualTo(1000));
     }
 
-    [Test]
+    [Theory]
     public async Task PostPayment_With503CardNumber_ReturnsError(bool authorised)
     {
         var cardNumber = "12345678901234" + (authorised ? "5" : "6");

@@ -1,13 +1,17 @@
 using System.Net;
 using System.Text.Json;
+
 using Moq;
 using Moq.Protected;
+
 using NUnit.Framework;
+
 using PaymentGateway.Api.Models.Bank;
 using PaymentGateway.Api.Services;
+
 using static PaymentGateway.Api.Tests.TestHelpers;
 
-namespace PaymentGateway.Api.Tests;
+namespace PaymentGateway.Api.Tests.Unit;
 
 public class BankServiceTests
 {

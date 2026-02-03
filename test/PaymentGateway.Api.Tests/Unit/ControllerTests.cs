@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+
 using Moq;
+
 using NUnit.Framework;
+
 using PaymentGateway.Api.Api;
 using PaymentGateway.Api.Controllers;
 using PaymentGateway.Api.Models;
@@ -11,7 +14,7 @@ using PaymentGateway.Api.Models.WebApi.Responses;
 
 using static PaymentGateway.Api.Tests.TestHelpers;
 
-namespace PaymentGateway.Api.Tests;
+namespace PaymentGateway.Api.Tests.Unit;
 
 public class ControllerTests
 {
