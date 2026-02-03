@@ -12,10 +12,12 @@ namespace PaymentGateway.Api.Controllers;
 public class PaymentsController : Controller
 {
     private readonly IPaymentsApi  _paymentsApi;
+    private readonly ILogger<PaymentsController> _logger;
 
-    public PaymentsController(IPaymentsApi paymentsApi)
+    public PaymentsController(IPaymentsApi paymentsApi, ILogger<PaymentsController> logger)
     {
         _paymentsApi = paymentsApi;
+        _logger = logger;
     }
 
     [HttpGet("{id:guid}")]
@@ -53,6 +55,7 @@ public class PaymentsController : Controller
     {
         if (exception is ApiException apiException)
         {
+            _logger.LogError($"Returned Api Exception with code {apiException.StatusCode}");
             switch (apiException.StatusCode)
             {
                 case 404:
@@ -62,7 +65,8 @@ public class PaymentsController : Controller
             }
         }
         
-        Console.WriteLine($"Encountered unexpected exception of type {exception.GetType()}. Exception message: {exception.Message}");
+        _logger.LogCritical(exception, $"Encountered unexpected exception. Exception message: {exception.Message}");
+
         return StatusCode(500, ErrorResponse.ForUnexpectedException());
     }
     

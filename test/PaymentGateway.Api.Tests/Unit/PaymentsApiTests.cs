@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 using Moq;
 
 using NUnit.Framework;
@@ -20,6 +22,7 @@ public class PaymentsApiTests
         //GIVEN an API
         var mockRepository = new Mock<IPaymentsRepository>();
         var mockBankService = new Mock<IBankService>();
+        var mockLogger = new Mock<ILogger<PaymentsApi>>();
 
         var guid = Guid.NewGuid();
         
@@ -28,7 +31,7 @@ public class PaymentsApiTests
             .Returns((Payment?)null);
 
         //WHEN we request a payment that does not exist
-        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
+        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object, mockLogger.Object);
 
         //THEN a 404 exception is returned
         var exception = Assert.Throws<ApiException>(() => api.GetPayment(guid));
@@ -44,6 +47,7 @@ public class PaymentsApiTests
         //GIVEN an API 
         var mockRepository = new Mock<IPaymentsRepository>();
         var mockBankService = new Mock<IBankService>();
+        var mockLogger = new Mock<ILogger<PaymentsApi>>();
 
         var payment = GetExamplePayment();
         
@@ -51,7 +55,7 @@ public class PaymentsApiTests
             .Setup(m => m.Get(It.Is<Guid>(g => g.Equals(payment.Id))))
             .Returns(payment);
 
-        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
+        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object, mockLogger.Object);
         
         //WHEN we request an existing payment
         var response = api.GetPayment(payment.Id);
@@ -66,6 +70,7 @@ public class PaymentsApiTests
         //GIVEN an API
         var mockRepository = new Mock<IPaymentsRepository>();
         var mockBankService = new Mock<IBankService>();
+        var mockLogger = new Mock<ILogger<PaymentsApi>>();
 
         var paymentRequest = GetPostPaymentRequest();
         
@@ -86,7 +91,7 @@ public class PaymentsApiTests
         });
         
         //WHEN we make a valid payment request
-        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
+        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object, mockLogger.Object);
         var response = await api.MakePayment(paymentRequest);
         
         //THEN the response is successful
@@ -111,7 +116,8 @@ public class PaymentsApiTests
         //GIVEN an api
         var mockRepository = new Mock<IPaymentsRepository>();
         var mockBankService = new Mock<IBankService>();
-        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object);
+        var mockLogger = new Mock<ILogger<PaymentsApi>>();
+        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object, mockLogger.Object);
 
         //WHEN we make an invalid request
         var paymentRequest = GetPostPaymentRequest(cardNumber: "1");
@@ -122,5 +128,51 @@ public class PaymentsApiTests
         Assert.That(exception!.StatusCode, Is.EqualTo(400));
         Assert.That(exception!.ErrorSummary, Is.EqualTo(ErrorSummary.InvalidPaymentRequest));
         Assert.That(exception!.ErrorDetail, Is.EqualTo("Card Number must be 14-19 numeric characters"));
+    }
+    
+    [Test]
+    public async Task ProcessPayment_WhenDatabaseSaveFails_Throws500AndLogsCriticalError()
+    {
+        //GIVEN an API
+        var mockRepository = new Mock<IPaymentsRepository>();
+        var mockBankService = new Mock<IBankService>();
+        var mockLogger = new Mock<ILogger<PaymentsApi>>();
+
+        var paymentRequest = GetPostPaymentRequest();
+        
+        var bankServiceResponse = new BankPaymentResponse(true, "12345678");
+        
+        mockBankService
+            .Setup(m => m.MakePayment(It.Is<BankPaymentRequest>(
+                req => req.CardNumber == paymentRequest.CardNumber
+                       && req.Amount == paymentRequest.Amount
+                       && req.Currency == paymentRequest.Currency
+                       && req.Cvv == paymentRequest.Cvv)))
+            .ReturnsAsync(bankServiceResponse);
+        
+        //AND a mock database that throws an exception
+        mockRepository
+            .Setup(m => m.Add(It.IsAny<Payment>()))
+            .Throws(new Exception("Unexpected database exception"));
+        
+        //WHEN we make a valid payment request
+        var api = new PaymentsApi(mockRepository.Object, mockBankService.Object, mockLogger.Object);
+        
+        //THEN the API throws an ApiException
+        var exception = Assert.ThrowsAsync<ApiException>(() => api.MakePayment(paymentRequest));
+          
+        Assert.That(exception!.StatusCode, Is.EqualTo(500));
+        Assert.That(exception!.ErrorSummary, Is.EqualTo(ErrorSummary.InternalError));
+        Assert.That(exception!.ErrorDetail, Is.EqualTo("An unknown error occurred. Do not attempt this payment again. Please contact support"));
+        
+        //AND the logger logged a critical error
+        mockLogger.Verify(
+            x => x.Log(
+            LogLevel.Critical,
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 }

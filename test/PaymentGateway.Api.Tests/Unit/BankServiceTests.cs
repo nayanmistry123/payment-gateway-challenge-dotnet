@@ -1,14 +1,11 @@
 using System.Net;
 using System.Text.Json;
-
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-
 using NUnit.Framework;
-
 using PaymentGateway.Api.Models.Bank;
 using PaymentGateway.Api.Services;
-
 using static PaymentGateway.Api.Tests.TestHelpers;
 
 namespace PaymentGateway.Api.Tests.Unit;
@@ -27,6 +24,7 @@ public class BankServiceTests
     public async Task MakePayment_GivenServiceReturns500FourTimes_ThrowsApiException()
     {
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        var mockLogger = new Mock<ILogger<BankService>>();
 
         handlerMock
             .Protected()
@@ -40,7 +38,7 @@ public class BankServiceTests
             .ReturnsAsync(_fiveHundredError)            
             .ReturnsAsync(_fiveHundredError);
         
-        var bankService = new BankService(GetHttpClient(handlerMock.Object));
+        var bankService = new BankService(GetHttpClient(handlerMock.Object), mockLogger.Object);
         
         //Exception is caught at controller level 
         Assert.ThrowsAsync<HttpRequestException>(async () =>
@@ -55,12 +53,22 @@ public class BankServiceTests
             ItExpr.IsAny<HttpRequestMessage>(),
             ItExpr.IsAny<CancellationToken>()
         );
+        
+        mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(3));
     }
     
     [Test]
     public async Task MakePayment_GivenServiceReturns500ThreeTimes_RetriesThreeTimesSuccessfully()
     {
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        var mockLogger = new Mock<ILogger<BankService>>();
         
         handlerMock
             .Protected()
@@ -77,7 +85,7 @@ public class BankServiceTests
                 Content = new StringContent(_exampleJson, System.Text.Encoding.UTF8, "application/json")
             });
 
-        var bankService = new BankService(GetHttpClient(handlerMock.Object));
+        var bankService = new BankService(GetHttpClient(handlerMock.Object), mockLogger.Object);
         
         var result = await bankService.MakePayment(GetExampleBankPaymentRequest());
         
@@ -90,12 +98,22 @@ public class BankServiceTests
             ItExpr.IsAny<HttpRequestMessage>(),
             ItExpr.IsAny<CancellationToken>()
         );
+        
+        mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(3));
     }
     
     [Test]
     public async Task MakePayment_GivenServiceReturns500Twice_RetriesTwiceSuccessfully()
     {
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        var mockLogger = new Mock<ILogger<BankService>>();
         
         handlerMock
             .Protected()
@@ -111,7 +129,7 @@ public class BankServiceTests
                 Content = new StringContent(_exampleJson, System.Text.Encoding.UTF8, "application/json")
             });
 
-        var bankService = new BankService(GetHttpClient(handlerMock.Object));
+        var bankService = new BankService(GetHttpClient(handlerMock.Object), mockLogger.Object);
         
         var result = await bankService.MakePayment(GetExampleBankPaymentRequest());
         
@@ -124,12 +142,22 @@ public class BankServiceTests
             ItExpr.IsAny<HttpRequestMessage>(),
             ItExpr.IsAny<CancellationToken>()
         );
+        
+        mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(2));
     }
     
     [Test]
     public async Task MakePayment_GivenServiceReturns500Once_RetriesOnceSuccessfully()
     {
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        var mockLogger = new Mock<ILogger<BankService>>();
         
         handlerMock
             .Protected()
@@ -144,7 +172,7 @@ public class BankServiceTests
                 Content = new StringContent(_exampleJson, System.Text.Encoding.UTF8, "application/json")
             });
 
-        var bankService = new BankService(GetHttpClient(handlerMock.Object));
+        var bankService = new BankService(GetHttpClient(handlerMock.Object), mockLogger.Object);
         
         var result = await bankService.MakePayment(GetExampleBankPaymentRequest());
         
@@ -157,6 +185,15 @@ public class BankServiceTests
             ItExpr.IsAny<HttpRequestMessage>(),
             ItExpr.IsAny<CancellationToken>()
         );
+        
+        mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Exactly(1));
     }
     
     [TestCase(true, "1234")]
@@ -166,6 +203,7 @@ public class BankServiceTests
         string code)
     {
         var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
+        var mockLogger = new Mock<ILogger<BankService>>();
         
         var responseJson = JsonSerializer.Serialize(new BankPaymentResponse(authorised, code),
             new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower });
@@ -182,7 +220,7 @@ public class BankServiceTests
                 Content = new StringContent(responseJson, System.Text.Encoding.UTF8, "application/json")
             });
 
-        var bankService = new BankService(GetHttpClient(handlerMock.Object));
+        var bankService = new BankService(GetHttpClient(handlerMock.Object), mockLogger.Object);
         
         var result = await bankService.MakePayment(GetExampleBankPaymentRequest());
         

@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
 
@@ -206,8 +208,11 @@ public class PaymentsIntegrationTests
         IBankService? bankService = null)
     {
         var paymentsApi =
-            new PaymentsApi(paymentsRepository ?? new PaymentsRepository(), bankService ?? new BankService(new HttpClient()));
-        var paymentsController = new PaymentsController(paymentsApi);
+            new PaymentsApi(
+                paymentsRepository ?? new PaymentsRepository(), 
+                bankService ?? new BankService(new HttpClient(), NullLogger<BankService>.Instance), 
+                NullLogger<PaymentsApi>.Instance);
+        var paymentsController = new PaymentsController(paymentsApi, NullLogger<PaymentsController>.Instance);
 
         return paymentsController;
    }

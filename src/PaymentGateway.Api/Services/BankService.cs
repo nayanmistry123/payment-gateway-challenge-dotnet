@@ -10,6 +10,7 @@ namespace PaymentGateway.Api.Services;
 public class BankService : IBankService
 {
     private readonly HttpClient _client;
+    private readonly ILogger<BankService> _logger;
     
     //ensure we serialise objects with snake case
     private JsonSerializerOptions _options = new()
@@ -17,13 +18,15 @@ public class BankService : IBankService
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
     };
 
-    public BankService(HttpClient httpClient)
+    public BankService(HttpClient httpClient, ILogger<BankService> logger)
     {
         _client = httpClient;
+        _logger = logger;
     }
 
+    
     //Retry on any 500 errors, as they may be transient
-    private readonly AsyncRetryPolicy<HttpResponseMessage> _retryPolicy =
+    private  AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy(ILogger<BankService> logger) =>
         Policy<HttpResponseMessage>
             .Handle<HttpRequestException>()
             .OrResult(msg => ((int)msg.StatusCode >= 500 && (int)msg.StatusCode <= 599)) 
@@ -33,13 +36,13 @@ public class BankService : IBankService
                 onRetry: (outcome, timespan, retryAttempt, context) =>
                 {
                     var statusCode = outcome.Result?.StatusCode;
-                    Console.WriteLine($"Retry attempt number {retryAttempt} after {timespan.TotalSeconds} seconds due to `{statusCode}` Status Code");
+                    _logger.LogWarning($"Retry attempt number {retryAttempt} after {timespan.TotalSeconds} seconds due to `{statusCode}` Status Code");
                 }
             );
     
     public async Task<BankPaymentResponse> MakePayment(BankPaymentRequest request)
     {
-        HttpResponseMessage response = await _retryPolicy.ExecuteAsync(() => _client.PostAsJsonAsync(
+        HttpResponseMessage response = await GetRetryPolicy(_logger).ExecuteAsync(() => _client.PostAsJsonAsync(
             "payments", request, _options));
         
         // We throw on non-200 code

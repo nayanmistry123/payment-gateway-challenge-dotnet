@@ -10,11 +10,13 @@ public class PaymentsApi : IPaymentsApi
 {
     private readonly IPaymentsRepository _paymentsRepository;
     private readonly IBankService _bankService;
+    private readonly ILogger<PaymentsApi> _logger;
 
-    public PaymentsApi(IPaymentsRepository paymentsRepository, IBankService bankService)
+    public PaymentsApi(IPaymentsRepository paymentsRepository, IBankService bankService, ILogger<PaymentsApi> logger)
     {
         _paymentsRepository = paymentsRepository;
         _bankService = bankService;
+        _logger = logger;
     }
     
     public PaymentResponse GetPayment(Guid id)
@@ -37,12 +39,27 @@ public class PaymentsApi : IPaymentsApi
 
         var makePayment = paymentRequest.FromWebDto();
         
-        //TODO think about transaction handling
         var bankServiceResponse = await _bankService.MakePayment(makePayment.ToBankDto());
+
         var confirmedPayment = makePayment.ToCompletePayment(bankServiceResponse);
 
-        _paymentsRepository.Add(confirmedPayment);
-
+        try
+        {
+            //TODO could add database retries here
+            _paymentsRepository.Add(confirmedPayment);
+        }
+        catch (Exception e)
+        {
+            //If we fail to save, then we are no longer in sync with the bank, so we need a critical error
+            _logger.LogCritical(e, 
+                $"Unknown error when trying to save confirmed payment with id {confirmedPayment.Id} and authorisation code {bankServiceResponse.AuthorizationCode}");
+            throw new ApiException(
+                ErrorSummary.InternalError,
+                "An unknown error occurred. Do not attempt this payment again. Please contact support",
+                500
+            );
+        }
+        
         return confirmedPayment.ToWebDto();
     }
 

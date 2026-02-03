@@ -1,9 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-
+using Microsoft.Extensions.Logging;
 using Moq;
-
 using NUnit.Framework;
-
 using PaymentGateway.Api.Api;
 using PaymentGateway.Api.Controllers;
 using PaymentGateway.Api.Models;
@@ -23,6 +21,7 @@ public class ControllerTests
     {
         //GIVEN a Mock API that throws an exception
         var mockApi = new Mock<IPaymentsApi>(MockBehavior.Strict);
+        var mockLogger = new Mock<ILogger<PaymentsController>>();
         
         //We should handle any ApiException with a 500 code or any unrecognised exception as a 500
         if (isApiException)
@@ -32,7 +31,7 @@ public class ControllerTests
             mockApi.Setup(p => p.MakePayment(It.IsAny<PostPaymentRequest>()))
                 .Throws(() => new Exception("Some unexpected exception"));
 
-        var controller = new PaymentsController(mockApi.Object);
+        var controller = new PaymentsController(mockApi.Object, mockLogger.Object);
 
         //WHEN we attempt a payment
         var response = await controller.ProcessPayment(GetPostPaymentRequest());
@@ -49,6 +48,15 @@ public class ControllerTests
         Assert.That(errorResponse.ErrorSummary, Is.EqualTo(ErrorSummary.InternalError.ToString()));
         Assert.That(errorResponse.ErrorDetail, Is.EqualTo("An Unexpected Error Occurred"));
         Assert.That(errorResponse.StatusCode, Is.EqualTo(500));
+        
+        mockLogger.Verify(
+            x => x.Log(
+                LogLevel.Critical,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 
     [Theory]
@@ -56,6 +64,7 @@ public class ControllerTests
     {
         //GIVEN a Mock API that throws an exception
         var mockApi = new Mock<IPaymentsApi>();
+        var mockLogger = new Mock<ILogger<PaymentsController>>();
         
         //We should handle any ApiException with a 500 code or any unrecognised exception as a 500
         if (isApiException)
@@ -65,7 +74,7 @@ public class ControllerTests
             mockApi.Setup(p => p.GetPayment(It.IsAny<Guid>()))
                 .Throws(() => new Exception("Some unexpected exception"));
 
-        var controller = new PaymentsController(mockApi.Object);
+        var controller = new PaymentsController(mockApi.Object, mockLogger.Object);
 
         //WHEN we attempt to retrieve a payment
         var response = await controller.GetPaymentAsync(Guid.NewGuid());
@@ -89,13 +98,14 @@ public class ControllerTests
     {
         //GIVEN an api that returns a valid payment response
         var mockApi = new Mock<IPaymentsApi>();
+        var mockLogger = new Mock<ILogger<PaymentsController>>();
 
         var exampleResponse = GetExampleResponse();
         mockApi
             .Setup(p => p.MakePayment(It.IsAny<PostPaymentRequest>()))
             .ReturnsAsync(exampleResponse);
         
-        var controller = new PaymentsController(mockApi.Object);
+        var controller = new PaymentsController(mockApi.Object, mockLogger.Object);
         
         //WHEN we make a payment
         var response = await controller.ProcessPayment(GetPostPaymentRequest());
@@ -118,13 +128,14 @@ public class ControllerTests
     {
         //GIVEN an api that returns a valid payment response
         var mockApi = new Mock<IPaymentsApi>();
-
+        var mockLogger = new Mock<ILogger<PaymentsController>>();
+        
         var exampleResponse = GetExampleResponse();
         mockApi
             .Setup(p => p.GetPayment(It.Is<Guid>(g => g.Equals(exampleResponse.Id))))
             .Returns(exampleResponse);
         
-        var controller = new PaymentsController(mockApi.Object);
+        var controller = new PaymentsController(mockApi.Object, mockLogger.Object);
         
         //WHEN we attempt to retrieve a payment
         var response = await controller.GetPaymentAsync(exampleResponse.Id);
@@ -147,7 +158,8 @@ public class ControllerTests
     {
         //GIVEN an Api that throws a 404 exception
         var mockApi = new Mock<IPaymentsApi>();
-
+        var mockLogger = new Mock<ILogger<PaymentsController>>();
+        
         var exampleResponse = GetExampleResponse();
         mockApi
             .Setup(p => p.GetPayment(It.Is<Guid>(g => g.Equals(exampleResponse.Id))))
@@ -156,7 +168,7 @@ public class ControllerTests
                 $"Payment with Id {exampleResponse.Id} does not exist",
                 404));
         
-        var controller = new PaymentsController(mockApi.Object);
+        var controller = new PaymentsController(mockApi.Object, mockLogger.Object);
         
         //WHEN we attempt to retrieve a payment 
         var response = await controller.GetPaymentAsync(exampleResponse.Id);
@@ -181,11 +193,12 @@ public class ControllerTests
     {
         //GIVEN a Mock API that throws a 400 validation exception
         var mockApi = new Mock<IPaymentsApi>(MockBehavior.Strict);
+        var mockLogger = new Mock<ILogger<PaymentsController>>();
         
         mockApi.Setup(p => p.MakePayment(It.IsAny<PostPaymentRequest>()))
                 .Throws(() => new ApiException(ErrorSummary.InvalidPaymentRequest, "The request was invalid", 400));
 
-        var controller = new PaymentsController(mockApi.Object);
+        var controller = new PaymentsController(mockApi.Object, mockLogger.Object);
 
         //WHEN we attempt a payment
         var response = await controller.ProcessPayment(GetPostPaymentRequest());
