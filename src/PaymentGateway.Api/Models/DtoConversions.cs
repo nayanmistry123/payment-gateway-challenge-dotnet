@@ -33,7 +33,7 @@ public static class DtoConversions
         return new MakePayment(
             Guid.NewGuid(),
             cardNumber: request.CardNumber,
-            expiryDate: DateTimeOffset.Parse($"{request.ExpiryYear}-{request.ExpiryMonth}-01"),
+            expiryDate: new DateTime(request.ExpiryYear, request.ExpiryMonth, 1),
             currency: request.Currency,
             amount: request.Amount,
             cvv: request.Cvv

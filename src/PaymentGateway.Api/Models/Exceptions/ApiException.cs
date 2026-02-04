@@ -1,5 +1,8 @@
 namespace PaymentGateway.Api.Models.Exceptions;
 
+/// <summary>
+/// An API Exception thrown by the code.
+/// </summary>
 public class ApiException : Exception
 {
     public ErrorSummary ErrorSummary { get; }

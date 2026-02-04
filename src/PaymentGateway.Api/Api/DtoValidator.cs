@@ -17,9 +17,11 @@ public static class DtoValidator
         
         if (request.ExpiryMonth < 1 || request.ExpiryMonth > 12)
             ConstructInvalidPaymentException("Expiry Month must be between 1-12");
-
+        
         var currentTime = DateTimeOffset.UtcNow;
-        if (!DateTimeOffset.TryParse($"{request.ExpiryYear}-{request.ExpiryMonth}-01", out var expiryDateTime) 
+        
+        if (request.ExpiryYear < currentTime.Year
+            || !DateTimeOffset.TryParse($"{request.ExpiryYear}-{request.ExpiryMonth}-01", out var expiryDateTime) 
             || expiryDateTime <= currentTime)
             ConstructInvalidPaymentException("Expiry Month and Year must be in the future");
         

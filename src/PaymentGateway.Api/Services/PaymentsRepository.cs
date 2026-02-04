@@ -1,6 +1,5 @@
 ﻿using PaymentGateway.Api.Models.Exceptions;
 using PaymentGateway.Api.Models.Internal;
-using PaymentGateway.Api.Models.Responses;
 
 namespace PaymentGateway.Api.Services;
 

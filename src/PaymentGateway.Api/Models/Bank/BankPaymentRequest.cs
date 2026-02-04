@@ -1,5 +1,8 @@
 namespace PaymentGateway.Api.Models.Bank;
 
+/// <summary>
+/// The Request DTO for use with the BankService
+/// </summary>
 public class BankPaymentRequest
 {
     public string CardNumber { get; set; }

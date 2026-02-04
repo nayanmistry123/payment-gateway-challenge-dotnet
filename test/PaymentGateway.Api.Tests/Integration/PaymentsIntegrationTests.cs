@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-
 using Moq;
-
 using NUnit.Framework;
-
 using PaymentGateway.Api.Api;
 using PaymentGateway.Api.Controllers;
 using PaymentGateway.Api.Models;
@@ -41,7 +37,7 @@ public class PaymentsIntegrationTests
         var paymentsController = InitialiseApp(paymentsRepository);
         
         //WHEN we retrieve that payment
-        var response = await paymentsController.GetPaymentAsync(payment.Id);
+        var response = await paymentsController.GetPayment(payment.Id);
         
         //THEN the payment is returned successfully
         Assert.That(response.Result is OkObjectResult);
@@ -56,14 +52,14 @@ public class PaymentsIntegrationTests
         var controller = InitialiseApp();
 
         //WHEN we attempt to retrieve that payment
-        var response = await controller.GetPaymentAsync(Guid.NewGuid());
+        var response = await controller.GetPayment(Guid.NewGuid());
         
         //THEN a 404 response is returned
         Assert.That(response.Result is NotFoundObjectResult);
     }
 
     [Test]
-    public async Task CanCreatePayment_WithMockedBankService()
+    public async Task CanCreatePayment_WithMaxIntAmount_WithMockedBankService()
     {
         //GIVEN no payments exist
         var mockedBankService = new Mock<IBankService>();
@@ -81,7 +77,7 @@ public class PaymentsIntegrationTests
             futureDate.Month,
             futureDate.Year,
             "GBP",
-            1000,
+            Int32.MaxValue,
             "1234"
         );
 
@@ -147,7 +143,7 @@ public class PaymentsIntegrationTests
         Assert.That(okPaymentResponse2.Status, Is.EqualTo("Declined"));
         
         //WHEN we request the first payment
-        var retrievePayment1Response = await controller.GetPaymentAsync(okPaymentResponse1.Id);
+        var retrievePayment1Response = await controller.GetPayment(okPaymentResponse1.Id);
         //THEN the payment is returned correctly 
         Assert.That(retrievePayment1Response.Result is OkObjectResult);
         var okRetrievePayment1Response = (OkObjectResult)retrievePayment1Response.Result!;
@@ -156,7 +152,7 @@ public class PaymentsIntegrationTests
         AssertEquals(okRetrievePayment1, okPaymentResponse1);
         
         //WHEN we request the second payment
-        var retrievePayment2Response = await controller.GetPaymentAsync(okPaymentResponse2.Id);
+        var retrievePayment2Response = await controller.GetPayment(okPaymentResponse2.Id);
         //THEN the payment is returned correctly 
         Assert.That(retrievePayment2Response.Result is OkObjectResult);
         var okRetrievePayment2Response = (OkObjectResult)retrievePayment2Response.Result!;
@@ -194,7 +190,7 @@ public class PaymentsIntegrationTests
         Assert.That(paymentResponse.Status, Is.EqualTo(authorised ? PaymentStatus.Authorized : PaymentStatus.Declined));
         AssertEquals(paymentRequest, paymentResponse);
 
-        var retrievedPaymentResponse = await controller.GetPaymentAsync(paymentResponse.Id);
+        var retrievedPaymentResponse = await controller.GetPayment(paymentResponse.Id);
         Assert.That(retrievedPaymentResponse.Result is OkObjectResult);
         var okRetrievedResult = (OkObjectResult)retrievedPaymentResponse.Result!;
         

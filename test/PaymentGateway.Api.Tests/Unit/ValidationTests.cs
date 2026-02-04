@@ -29,6 +29,10 @@ public class ValidationTests
         yield return new TestCaseData(GetPostPaymentRequest(expiryMonth: 13),
             "Expiry Month must be between 1-12").SetName("13 Expiry Month");
         
+        yield return new TestCaseData(GetPostPaymentRequest(expiryMonth: DateTimeOffset.Now.AddMonths(-1).Month, expiryYear: -2025),
+            "Expiry Month and Year must be in the future").SetName("Negative Year");
+        yield return new TestCaseData(GetPostPaymentRequest(expiryMonth: DateTimeOffset.Now.AddMonths(-1).Month, expiryYear: 1),
+            "Expiry Month and Year must be in the future").SetName("Single digit Year");
         yield return new TestCaseData(GetPostPaymentRequest(expiryMonth: DateTimeOffset.Now.AddMonths(-1).Month, expiryYear: DateTimeOffset.Now.Year),
             "Expiry Month and Year must be in the future").SetName("Current Year Previous Month");
         yield return new TestCaseData(GetPostPaymentRequest(expiryMonth: DateTimeOffset.Now.AddMonths(1).Month, expiryYear: DateTimeOffset.Now.AddYears(-11).Year),
@@ -51,6 +55,11 @@ public class ValidationTests
             "Cvv must be 3-4 numeric characters").SetName("Alphanumeric Cvv");
         yield return new TestCaseData(GetPostPaymentRequest(cvv: null),
             "Cvv must be 3-4 numeric characters").SetName("Null Cvv");
+        
+        yield return new TestCaseData(GetPostPaymentRequest(amount: -10),
+            "Amount must be non-negative").SetName("Negative amount");
+        yield return new TestCaseData(GetPostPaymentRequest(amount: 0),
+            "Amount must be non-negative").SetName("Zero amount");
     }
     
     [TestCaseSource(nameof(InvalidPaymentRequests))]

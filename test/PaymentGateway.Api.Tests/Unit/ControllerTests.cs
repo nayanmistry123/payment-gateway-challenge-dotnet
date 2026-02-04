@@ -77,7 +77,7 @@ public class ControllerTests
         var controller = new PaymentsController(mockApi.Object, mockLogger.Object);
 
         //WHEN we attempt to retrieve a payment
-        var response = await controller.GetPaymentAsync(Guid.NewGuid());
+        var response = await controller.GetPayment(Guid.NewGuid());
 
         Assert.That(response.Result, Is.Not.Null);
         Assert.That(response.Result is ObjectResult);
@@ -138,7 +138,7 @@ public class ControllerTests
         var controller = new PaymentsController(mockApi.Object, mockLogger.Object);
         
         //WHEN we attempt to retrieve a payment
-        var response = await controller.GetPaymentAsync(exampleResponse.Id);
+        var response = await controller.GetPayment(exampleResponse.Id);
 
         Assert.That(response.Result, Is.Not.Null);
         Assert.That(response.Result is OkObjectResult);
@@ -171,7 +171,7 @@ public class ControllerTests
         var controller = new PaymentsController(mockApi.Object, mockLogger.Object);
         
         //WHEN we attempt to retrieve a payment 
-        var response = await controller.GetPaymentAsync(exampleResponse.Id);
+        var response = await controller.GetPayment(exampleResponse.Id);
 
         Assert.That(response.Result, Is.Not.Null);
         Assert.That(response.Result is NotFoundObjectResult);

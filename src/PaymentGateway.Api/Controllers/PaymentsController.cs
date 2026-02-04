@@ -20,8 +20,13 @@ public class PaymentsController : Controller
         _logger = logger;
     }
 
+    /// <summary>
+    /// Retrieve an existing payment
+    /// </summary>
+    /// <param name="id">The ID of the payment to retrieve</param>
+    /// <returns>The Payment if it exists or an error response.</returns>
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult<PaymentResponse>> GetPaymentAsync(Guid id)
+    public async Task<ActionResult<PaymentResponse>> GetPayment(Guid id)
     {
         try
         {
@@ -34,6 +39,11 @@ public class PaymentsController : Controller
         }
     }
     
+    /// <summary>
+    /// Process a payment
+    /// </summary>
+    /// <param name="postPaymentRequest">The Payment to process</param>
+    /// <returns>The resultant processed payment or an error response.</returns>
     [HttpPost("")]
     public async Task<ActionResult<PaymentResponse>> ProcessPayment(PostPaymentRequest postPaymentRequest)
     {

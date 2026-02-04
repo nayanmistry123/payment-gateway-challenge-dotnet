@@ -12,7 +12,7 @@ public class BankService : IBankService
     private readonly HttpClient _client;
     private readonly ILogger<BankService> _logger;
     
-    //ensure we serialise objects with snake case
+    //Ensure we serialise objects with snake case to match the BankService expected JSON format
     private JsonSerializerOptions _options = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
@@ -23,7 +23,6 @@ public class BankService : IBankService
         _client = httpClient;
         _logger = logger;
     }
-
     
     //Retry on any 500 errors, as they may be transient
     private  AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy(ILogger<BankService> logger) =>
