@@ -12,7 +12,7 @@ public interface IPaymentsRepository
     public void Add(Payment payment);
 
     /// <summary>
-    /// Retrives a payment by its ID.
+    /// Retrieves a payment by its ID.
     /// </summary>
     /// <param name="id">The ID of the payment</param>
     /// <returns>The payment if found, else null</returns>

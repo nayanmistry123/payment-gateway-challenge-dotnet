@@ -25,7 +25,7 @@ Allows the user to retrieve details of an already existing payment, by its ID.
   - Controller as the entry point of the application
   - API for performing validation and business logic
   - Repository for database persistence
-- The Repository layer is currently in memory online, but could easily be swapped out for a real database connection.
+- The Repository layer is currently in memory only, but could easily be swapped out for a real database connection.
 - The API currently supports payments up to a maximum value of 2,147,483,647 in the minor currency unit. This could be changed in the future if larger payments are required.
 - The API interacts with the external bank service over HTTP. Ideally this would be HTTPS, as sensitive information is being transmitted.
 

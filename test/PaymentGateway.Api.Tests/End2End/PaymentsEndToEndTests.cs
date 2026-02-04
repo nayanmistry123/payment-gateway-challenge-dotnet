@@ -1,9 +1,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
-
 using NUnit.Framework;
-
 using PaymentGateway.Api.Models.Exceptions;
 
 namespace PaymentGateway.Api.Tests.End2End;
