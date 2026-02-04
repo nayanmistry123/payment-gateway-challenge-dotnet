@@ -17,7 +17,7 @@ public static class DtoConversions
             status: payment.PaymentAuthorised 
                 ? PaymentStatus.Authorized.ToString() 
                 : PaymentStatus.Declined.ToString(),
-            cardNumberLastFour: payment.CardNumber.Substring(payment.CardNumber.Length - 4),
+            cardNumberLastFour: payment.CardNumberLastFour,
             expiryMonth: payment.ExpiryDate.Month,
             expiryYear: payment.ExpiryDate.Year,
             currency: payment.Currency,
@@ -61,11 +61,10 @@ public static class DtoConversions
     {
         return new Payment(
             id: payment.Id,
-            cardNumber: payment.CardNumber,
+            cardNumberLastFour: payment.CardNumber.Substring(payment.CardNumber.Length-4),
             expiryDate: payment.ExpiryDate,
             currency: payment.Currency,
             amount: payment.Amount,
-            cvv: payment.Cvv,
             paymentAuthorised: bankPaymentResponse.Authorized,
             authorisationCode: bankPaymentResponse.AuthorizationCode
         );

@@ -104,10 +104,9 @@ public class PaymentsApiTests
         Assert.That(savedPayment.Amount, Is.EqualTo(paymentRequest.Amount));
         Assert.That(savedPayment.Currency, Is.EqualTo(paymentRequest.Currency));
         Assert.That(savedPayment.ExpiryDate, Is.EqualTo(DateTimeOffset.Parse($"{paymentRequest.ExpiryYear}-{paymentRequest.ExpiryMonth}-01")));
-        Assert.That(savedPayment.Cvv, Is.EqualTo(paymentRequest.Cvv));
         Assert.That(savedPayment.AuthorisationCode, Is.EqualTo(bankServiceResponse.AuthorizationCode));
         Assert.That(savedPayment.PaymentAuthorised, Is.EqualTo(bankServiceResponse.Authorized));
-        Assert.That(savedPayment.CardNumber, Is.EqualTo(paymentRequest.CardNumber));
+        Assert.That(savedPayment.CardNumberLastFour, Is.EqualTo(paymentRequest.CardNumber.Substring(paymentRequest.CardNumber.Length-4)));
     }
     
     [Test]

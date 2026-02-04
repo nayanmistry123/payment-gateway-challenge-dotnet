@@ -27,7 +27,6 @@ public class PaymentsIntegrationTests
             DateTimeOffset.Parse("2030-03-01"),
             "GBP",
             1250,
-            "1234",
             true,
             "1234"
         );

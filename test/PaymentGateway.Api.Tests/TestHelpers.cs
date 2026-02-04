@@ -46,7 +46,6 @@ public static class TestHelpers
         DateTimeOffset? expiryDate = null,
         string currency = "GBP",
         int amount = 1000,
-        string cvv = "1234",
         bool paymentAuthorised = false,
         string authorisationCode = "1234"
     )
@@ -57,7 +56,6 @@ public static class TestHelpers
             expiryDate ?? DateTimeOffset.Parse("2020-01-01"),
             currency,
             amount,
-            cvv,
             paymentAuthorised,
             authorisationCode);
     }
@@ -85,7 +83,7 @@ public static class TestHelpers
     public static void AssertEquals(PaymentResponse response, Payment payment)
     {
         Assert.That(response.Id, Is.EqualTo(payment.Id));
-        Assert.That(response.CardNumberLastFour, Is.EqualTo(payment.CardNumber.Substring(payment.CardNumber.Length-4)));
+        Assert.That(response.CardNumberLastFour, Is.EqualTo(payment.CardNumberLastFour));
         Assert.That(response.Currency, Is.EqualTo(payment.Currency));
         Assert.That(response.Amount, Is.EqualTo(payment.Amount));
         Assert.That(response.Status, Is.EqualTo(payment.PaymentAuthorised ? "Authorized" : "Declined"));

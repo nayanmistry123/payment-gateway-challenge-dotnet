@@ -51,8 +51,10 @@ public class PaymentsApi : IPaymentsApi
         catch (Exception e)
         {
             //If we fail to save, then we are no longer in sync with the bank, so we need a critical error
+            //Log the non-sensitive information we need to correlate to a user's request
             _logger.LogCritical(e, 
-                $"Unknown error when trying to save confirmed payment with id {confirmedPayment.Id} and authorisation code {bankServiceResponse.AuthorizationCode}");
+                $"Unknown error when trying to save confirmed payment " +
+                $"with ID {confirmedPayment.Id}, Card Number ending with '{confirmedPayment.CardNumberLastFour}' and authorisation code {bankServiceResponse.AuthorizationCode}");
             throw new ApiException(
                 ErrorSummary.InternalError,
                 "An unknown error occurred. Do not attempt this payment again. Please contact support",

@@ -2,6 +2,8 @@ namespace PaymentGateway.Api.Models.Internal;
 
 /// <summary>
 /// Internal class for a payment request
+/// Contains sensitive information of Card Number and CVV
+/// An object of this class should NEVER be persisted 
 /// </summary>
 public class MakePayment
 {
