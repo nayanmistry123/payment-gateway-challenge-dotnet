@@ -1,5 +1,6 @@
 # Payment Gateway API
 
+The Payment Gateway requires a bank service to be running on http://localhost:8080/.
 The Payment Gateway REST API has two endpoints: 
 
 ### ProcessPayment: 
