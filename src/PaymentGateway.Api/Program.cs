@@ -11,7 +11,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IPaymentsRepository, PaymentsRepository>();
 builder.Services.AddHttpClient<BankService>(client =>
 {
-    client.BaseAddress = new Uri("http://localhost:8080/"); //TODO we should be using HTTPS
+    //TODO we should be using HTTPS
+    //TODO we should pull in URL via Environment Variable
+    client.BaseAddress = new Uri("http://localhost:8080/"); 
 });
 
 builder.Services.AddTransient<IBankService>(sp =>

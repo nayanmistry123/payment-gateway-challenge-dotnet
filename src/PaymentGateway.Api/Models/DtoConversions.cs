@@ -15,7 +15,7 @@ public static class DtoConversions
         return new PaymentResponse(
             id: payment.Id,
             status: payment.PaymentAuthorised 
-                ? PaymentStatus.Authorized.ToString() 
+                ? PaymentStatus.Authorized.ToString() //Convert enum to string, so it does not show as just 0 or 1 to the user
                 : PaymentStatus.Declined.ToString(),
             cardNumberLastFour: payment.CardNumberLastFour,
             expiryMonth: payment.ExpiryDate.Month,
